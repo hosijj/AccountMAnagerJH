@@ -28,12 +28,10 @@ public class AccountsInfo implements Serializable {
     private String email;
 
     @NotNull
-    @Pattern(regexp = "^[a-zA-Z0-9]*$")
     @Column(name = "country", nullable = false)
     private String country;
 
     @NotNull
-    @Size(min = 5, max = 5)
     @Column(name = "postal_code", length = 5, nullable = false)
     private Integer postalCode;
 
@@ -57,7 +55,6 @@ public class AccountsInfo implements Serializable {
     @Column(name = "latitude")
     private Double latitude;
 
-    @Size(min = 4, max = 4)
     @Column(name = "security_pin", length = 4)
     private Integer securityPin;
 
