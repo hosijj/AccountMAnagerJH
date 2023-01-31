@@ -1,6 +1,7 @@
 package com.rogers.accountmanager.repository;
 
 import com.rogers.accountmanager.domain.AccountsInfo;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AccountsInfoRepository extends JpaRepository<AccountsInfo, Long> {}
+public interface AccountsInfoRepository extends JpaRepository<AccountsInfo, Long> {
+    Optional<AccountsInfo> findByEmail(String email);
+}

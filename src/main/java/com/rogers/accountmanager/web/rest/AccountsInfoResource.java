@@ -225,6 +225,21 @@ public class AccountsInfoResource {
     }
 
     /**
+     * {@code GET  /accounts-infos/:id} : get the "id" accountsInfo.
+     *
+     * @param id the id of the accountsInfo to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the accountsInfo, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/accounts-infos-find")
+    public ResponseEntity<AccountsInfo> getAccountsInfo(@RequestParam Long id, @RequestParam String email) {
+        log.debug("REST request to get AccountsInfo : {}", id, email);
+        Optional<AccountsInfo> accountsInfo = null;
+        if (id != null) accountsInfo = accountsInfoRepository.findById(id);
+        if (email != null) accountsInfo = accountsInfoRepository.findByEmail(email);
+        return ResponseUtil.wrapOrNotFound(accountsInfo);
+    }
+
+    /**
      * {@code DELETE  /accounts-infos/:id} : delete the "id" accountsInfo.
      *
      * @param id the id of the accountsInfo to delete.
