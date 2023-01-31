@@ -1,21 +1,26 @@
 package com.rogers.accountmanager.web.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rogers.accountmanager.domain.AccountsInfo;
 import com.rogers.accountmanager.repository.AccountsInfoRepository;
 import com.rogers.accountmanager.web.rest.errors.BadRequestAlertException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.xml.ws.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
@@ -30,6 +35,7 @@ public class AccountsInfoResource {
     private final Logger log = LoggerFactory.getLogger(AccountsInfoResource.class);
 
     private static final String ENTITY_NAME = "accountsInfo";
+    private RestTemplate restTemplate;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -48,22 +54,45 @@ public class AccountsInfoResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/accounts-infos")
-    public ResponseEntity<AccountsInfo> createAccountsInfo(@Valid @RequestBody AccountsInfo accountsInfo) throws URISyntaxException {
+    public ResponseEntity<String> createAccountsInfo(@Valid @RequestBody AccountsInfo accountsInfo)
+        throws URISyntaxException, JsonProcessingException {
+        accountsInfo.setStatus(AccountsInfo.Status.ACTIVE);
+
         log.debug("REST request to save AccountsInfo : {}", accountsInfo);
         if (accountsInfo.getId() != null) {
             throw new BadRequestAlertException("A new accountsInfo cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+
+        String apiUrl = "https://api.zippopotam.us/" + accountsInfo.getCountry() + "/" + accountsInfo.getPostalCode();
+        System.out.println(retrieveDataFromAPI(apiUrl));
+        //        String response = retrieveDataFromAPI(apiUrl);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Map<String, Object> responseMap = mapper.readValue(retrieveDataFromAPI(apiUrl), Map.class);
+            List<Map<String, Object>> places = (List<Map<String, Object>>) responseMap.get("places");
+            String placeName = (String) places.get(0).get("place name");
+            String state = (String) places.get(0).get("state abbreviation");
+            Double longitude = Double.parseDouble((String) places.get(0).get("longitude"));
+            Double latitude = Double.parseDouble((String) places.get(0).get("latitude"));
+            accountsInfo.setPlace(placeName);
+            accountsInfo.setState(state);
+            accountsInfo.setLongitude(longitude);
+            accountsInfo.setLatitude(latitude);
+        } catch (IOException e) {
+            // handle the error
+            log.error("Error parsing response", e);
         }
         AccountsInfo result = accountsInfoRepository.save(accountsInfo);
         return ResponseEntity
             .created(new URI("/api/accounts-infos/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+            .body(" AccountId: " + result.getId() + " Status: " + result.getStatus() + " SecurityPin: " + result.getSecurityPin());
     }
 
     /**
      * {@code PUT  /accounts-infos/:id} : Updates an existing accountsInfo.
      *
-     * @param id the id of the accountsInfo to save.
+     * @param id           the id of the accountsInfo to save.
      * @param accountsInfo the accountsInfo to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated accountsInfo,
      * or with status {@code 400 (Bad Request)} if the accountsInfo is not valid,
@@ -97,7 +126,7 @@ public class AccountsInfoResource {
     /**
      * {@code PATCH  /accounts-infos/:id} : Partial updates given fields of an existing accountsInfo, field will ignore if it is null
      *
-     * @param id the id of the accountsInfo to save.
+     * @param id           the id of the accountsInfo to save.
      * @param accountsInfo the accountsInfo to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated accountsInfo,
      * or with status {@code 400 (Bad Request)} if the accountsInfo is not valid,
@@ -209,5 +238,10 @@ public class AccountsInfoResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    private static String retrieveDataFromAPI(String apiUrl) {
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(apiUrl, String.class);
     }
 }

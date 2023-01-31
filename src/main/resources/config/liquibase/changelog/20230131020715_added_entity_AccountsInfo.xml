@@ -9,7 +9,7 @@
     <!--
         Added the entity AccountsInfo.
     -->
-    <changeSet id="20230131020715-1-2" author="jhipster">
+    <changeSet id="20230131020715-1-2-3" author="jhipster">
         <createTable tableName="accounts_info">
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
@@ -45,7 +45,7 @@
                 <constraints nullable="true" />
             </column>
             <column name="security_pin" type="varchar(4)">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>

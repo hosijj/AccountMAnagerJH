@@ -24,14 +24,25 @@ public class AccountsInfo implements Serializable {
     private String name;
 
     @NotNull
+    @Email
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @NotNull
     @Column(name = "country", nullable = false)
-    private String country;
+    @Enumerated(EnumType.STRING)
+    private Country country;
+
+    public enum Country {
+        US,
+        DE,
+        ES,
+        FR,
+    }
 
     @NotNull
+    //    @NotEmpty
+    @Digits(integer = 5, fraction = 0)
     @Column(name = "postal_code", length = 5, nullable = false)
     private Integer postalCode;
 
@@ -40,7 +51,14 @@ public class AccountsInfo implements Serializable {
 
     @NotNull
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.ACTIVE;
+
+    public enum Status {
+        REQUESTED,
+        ACTIVE,
+        INACTIVE,
+    }
 
     @Column(name = "place")
     private String place;
@@ -55,6 +73,9 @@ public class AccountsInfo implements Serializable {
     @Column(name = "latitude")
     private Double latitude;
 
+    //    @NotNull
+    //    @NotEmpty
+    //    @Digits(integer = 4, fraction = 0)
     @Column(name = "security_pin", length = 4)
     private Integer securityPin;
 
@@ -98,16 +119,16 @@ public class AccountsInfo implements Serializable {
         this.email = email;
     }
 
-    public String getCountry() {
+    public Country getCountry() {
         return this.country;
     }
 
-    public AccountsInfo country(String country) {
+    public AccountsInfo country(Country country) {
         this.country = country;
         return this;
     }
 
-    public void setCountry(String country) {
+    public void setCountry(Country country) {
         this.country = country;
     }
 
@@ -137,16 +158,16 @@ public class AccountsInfo implements Serializable {
         this.age = age;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return this.status;
     }
 
-    public AccountsInfo status(String status) {
+    public AccountsInfo status(Status status) {
         this.status = status;
         return this;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
