@@ -231,9 +231,12 @@ public class AccountsInfoResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/accounts-infos/{id}")
-    public ResponseEntity<Void> deleteAccountsInfo(@PathVariable Long id) {
-        log.debug("REST request to delete AccountsInfo : {}", id);
-        accountsInfoRepository.deleteById(id);
+    public ResponseEntity<Void> deleteAccountsInfo(@PathVariable Long id, @RequestParam(required = true) Integer pin) {
+        log.debug("REST request to delete AccountsInfo : {} with pin {}", id, pin);
+        if (
+            accountsInfoRepository.findById(id).get().getSecurityPin() == pin &&
+            accountsInfoRepository.findById(id).get().getStatus().equals(AccountsInfo.Status.INACTIVE)
+        ) accountsInfoRepository.deleteById(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
