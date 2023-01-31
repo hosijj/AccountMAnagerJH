@@ -95,6 +95,19 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.ohcomeyes/swagger-ui-layer -->
+        <dependency>
+            <groupId>com.github.ohcomeyes</groupId>
+            <artifactId>swagger-ui-layer</artifactId>
+            <version>1.2</version>
+        </dependency>
+
         <dependency>
             <groupId>tech.jhipster</groupId>
             <artifactId>jhipster-framework</artifactId>
