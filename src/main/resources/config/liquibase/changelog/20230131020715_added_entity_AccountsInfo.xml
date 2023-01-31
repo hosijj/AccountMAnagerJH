@@ -9,7 +9,7 @@
     <!--
         Added the entity AccountsInfo.
     -->
-    <changeSet id="20230131020715-1" author="jhipster">
+    <changeSet id="20230131020715-1-2" author="jhipster">
         <createTable tableName="accounts_info">
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
@@ -23,7 +23,7 @@
             <column name="country" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="postal_code" type="integer">
+            <column name="postal_code" type="varchar(5)">
                 <constraints nullable="false" />
             </column>
             <column name="age" type="integer">
@@ -44,7 +44,7 @@
             <column name="latitude" type="double">
                 <constraints nullable="true" />
             </column>
-            <column name="security_pin" type="integer">
+            <column name="security_pin" type="varchar(4)">
                 <constraints nullable="true" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
