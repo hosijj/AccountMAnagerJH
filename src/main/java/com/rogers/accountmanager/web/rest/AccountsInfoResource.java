@@ -5,11 +5,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rogers.accountmanager.domain.AccountsInfo;
 import com.rogers.accountmanager.repository.AccountsInfoRepository;
+import com.rogers.accountmanager.service.dto.CountOfUsersGroupedByStateAndPlaceDTO;
 import com.rogers.accountmanager.web.rest.errors.BadRequestAlertException;
+import com.sun.corba.se.spi.ior.ObjectKey;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.ws.Response;
@@ -227,17 +230,33 @@ public class AccountsInfoResource {
     /**
      * {@code GET  /accounts-infos/:id} : get the "id" accountsInfo.
      *
-     * @param id the id of the accountsInfo to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the accountsInfo, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/accounts-infos-find")
-    public ResponseEntity<AccountsInfo> getAccountsInfo(@RequestParam Long id, @RequestParam String email) {
-        log.debug("REST request to get AccountsInfo : {}", id, email);
-        Optional<AccountsInfo> accountsInfo = null;
-        if (id != null) accountsInfo = accountsInfoRepository.findById(id);
-        if (email != null) accountsInfo = accountsInfoRepository.findByEmail(email);
+    public ResponseEntity<AccountsInfo> getAccountsInfo(@RequestBody Map<String, String> searchBy) throws Exception {
+        log.debug("REST request to get AccountsInfo : {}", searchBy.get("email"));
+
+        Optional<AccountsInfo> accountsInfo = Optional.empty();
+        if (searchBy.get("id") == null || searchBy.get("email") == null) throw new NullPointerException(
+            "Processing fail. Got a null response"
+        );
+        if (!searchBy.get("id").equals("")) accountsInfo =
+            accountsInfoRepository.findById(Long.valueOf(searchBy.get("id"))); else accountsInfo =
+            accountsInfoRepository.findByEmail(searchBy.get("email"));
         return ResponseUtil.wrapOrNotFound(accountsInfo);
     }
+
+    /**
+     404 (Not Found)}.
+     */
+    /*  @GetMapping("/accounts-infos-count")
+    public ResponseEntity<List<CountOfUsersGroupedByStateAndPlaceDTO>> getCountOfUsersGroupedByStateAndPlace() {
+        List<Object[]> results = accountsInfoRepository.getCountByCountryAndState();
+        List<CountOfUsersGroupedByStateAndPlaceDTO> dtos = results.stream()
+            .map(result -> new CountOfUsersGroupedByStateAndPlaceDTO((String) result[0], (String) result[1], (Long) result[2]))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }*/
 
     /**
      * {@code DELETE  /accounts-infos/:id} : delete the "id" accountsInfo.
