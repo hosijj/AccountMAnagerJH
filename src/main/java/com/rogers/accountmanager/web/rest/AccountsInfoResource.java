@@ -24,6 +24,7 @@ import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.MethodNotAllowedException;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
@@ -70,21 +71,7 @@ public class AccountsInfoResource {
         System.out.println(retrieveDataFromAPI(apiUrl));
         //        String response = retrieveDataFromAPI(apiUrl);
         ObjectMapper mapper = new ObjectMapper();
-        try {
-            Map<String, Object> responseMap = mapper.readValue(retrieveDataFromAPI(apiUrl), Map.class);
-            List<Map<String, Object>> places = (List<Map<String, Object>>) responseMap.get("places");
-            String placeName = (String) places.get(0).get("place name");
-            String state = (String) places.get(0).get("state abbreviation");
-            Double longitude = Double.parseDouble((String) places.get(0).get("longitude"));
-            Double latitude = Double.parseDouble((String) places.get(0).get("latitude"));
-            accountsInfo.setPlace(placeName);
-            accountsInfo.setState(state);
-            accountsInfo.setLongitude(longitude);
-            accountsInfo.setLatitude(latitude);
-        } catch (IOException e) {
-            // handle the error
-            log.error("Error parsing response", e);
-        }
+        setPlace(accountsInfo, apiUrl, mapper);
         AccountsInfo result = accountsInfoRepository.save(accountsInfo);
         return ResponseEntity
             .created(new URI("/api/accounts-infos/" + result.getId()))
@@ -118,12 +105,35 @@ public class AccountsInfoResource {
         if (!accountsInfoRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
+        if (accountsInfo.getStatus() == AccountsInfo.Status.ACTIVE) {
+            String apiUrl = "https://api.zippopotam.us/" + accountsInfo.getCountry() + "/" + accountsInfo.getPostalCode();
+            ObjectMapper mapper = new ObjectMapper();
+            setPlace(accountsInfo, apiUrl, mapper);
 
-        AccountsInfo result = accountsInfoRepository.save(accountsInfo);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accountsInfo.getId().toString()))
-            .body(result);
+            AccountsInfo result = accountsInfoRepository.save(accountsInfo);
+            return ResponseEntity
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accountsInfo.getId().toString()))
+                .body(result);
+        } else throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+    }
+
+    private void setPlace(@RequestBody @Valid AccountsInfo accountsInfo, String apiUrl, ObjectMapper mapper) {
+        try {
+            Map<String, Object> responseMap = mapper.readValue(retrieveDataFromAPI(apiUrl), Map.class);
+            List<Map<String, Object>> places = (List<Map<String, Object>>) responseMap.get("places");
+            String placeName = (String) places.get(0).get("place name");
+            String state = (String) places.get(0).get("state abbreviation");
+            Double longitude = Double.parseDouble((String) places.get(0).get("longitude"));
+            Double latitude = Double.parseDouble((String) places.get(0).get("latitude"));
+            accountsInfo.setPlace(placeName);
+            accountsInfo.setState(state);
+            accountsInfo.setLongitude(longitude);
+            accountsInfo.setLatitude(latitude);
+        } catch (IOException e) {
+            // handle the error
+            log.error("Error parsing response", e);
+        }
     }
 
     /**
@@ -249,14 +259,6 @@ public class AccountsInfoResource {
     /**
      404 (Not Found)}.
      */
-    /*  @GetMapping("/accounts-infos-count")
-    public ResponseEntity<List<CountOfUsersGroupedByStateAndPlaceDTO>> getCountOfUsersGroupedByStateAndPlace() {
-        List<Object[]> results = accountsInfoRepository.getCountByCountryAndState();
-        List<CountOfUsersGroupedByStateAndPlaceDTO> dtos = results.stream()
-            .map(result -> new CountOfUsersGroupedByStateAndPlaceDTO((String) result[0], (String) result[1], (Long) result[2]))
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
-    }*/
 
     /**
      * {@code DELETE  /accounts-infos/:id} : delete the "id" accountsInfo.
