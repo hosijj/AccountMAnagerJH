@@ -105,7 +105,7 @@ public class AccountsInfoResource {
         if (!accountsInfoRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        if (accountsInfo.getStatus() == AccountsInfo.Status.ACTIVE) {
+        if (accountsInfoRepository.findById(id).get().getStatus() == AccountsInfo.Status.ACTIVE) {
             String apiUrl = "https://api.zippopotam.us/" + accountsInfo.getCountry() + "/" + accountsInfo.getPostalCode();
             ObjectMapper mapper = new ObjectMapper();
             setPlace(accountsInfo, apiUrl, mapper);
@@ -115,7 +115,7 @@ public class AccountsInfoResource {
                 .ok()
                 .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accountsInfo.getId().toString()))
                 .body(result);
-        } else throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        } else throw new BadRequestAlertException("Inactive Status", ENTITY_NAME, "InactiveStatus");
     }
 
     private void setPlace(@RequestBody @Valid AccountsInfo accountsInfo, String apiUrl, ObjectMapper mapper) {
