@@ -27,6 +27,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.MethodNotAllowedException;
 import tech.jhipster.web.util.HeaderUtil;
@@ -68,9 +69,12 @@ public class AccountsInfoResource {
 
         log.debug("REST request to save AccountsInfo : {}", accountsInfo);
 
+        // Calling place info from zippopoteam
         String apiUrl = "https://api.zippopotam.us/" + accountsInfo.getCountry() + "/" + accountsInfo.getPostalCode();
         ObjectMapper mapper = new ObjectMapper();
+        // set state, Longitude, LAtitude and placeName by setPlace method
         setPlace(accountsInfo, apiUrl, mapper);
+
         AccountsInfo result = accountsInfoRepository.save(accountsInfo);
         return ResponseEntity
             .created(new URI("/api/accounts-infos/" + result.getId()))
@@ -104,7 +108,9 @@ public class AccountsInfoResource {
         if (!accountsInfoRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
+        // Account status must be active to edit
         if (accountsInfoRepository.findById(id).get().getStatus() == AccountsInfo.Status.ACTIVE) {
+            // if address change requires to call the zippo api to retrieve new info
             String apiUrl = "https://api.zippopotam.us/" + accountsInfo.getCountry() + "/" + accountsInfo.getPostalCode();
             ObjectMapper mapper = new ObjectMapper();
             setPlace(accountsInfo, apiUrl, mapper);
@@ -117,6 +123,7 @@ public class AccountsInfoResource {
         } else throw new BadRequestAlertException("Inactive Status", ENTITY_NAME, "InactiveStatus");
     }
 
+    //  this method set the place infos retrived from zippo api
     private void setPlace(@RequestBody @Valid AccountsInfo accountsInfo, String apiUrl, ObjectMapper mapper) {
         try {
             Map<String, Object> responseMap = mapper.readValue(retrieveDataFromAPI(apiUrl), Map.class);
@@ -164,12 +171,13 @@ public class AccountsInfoResource {
      *
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the accountsInfo, or with status {@code 404 (Not Found)}.
      */
+    // finds by Id or Email
     @GetMapping("/accounts-infos-find")
     public ResponseEntity<AccountsInfo> getAccountsInfo(@RequestBody Map<String, String> searchBy) throws Exception {
         log.debug("REST request to get AccountsInfo : {}", searchBy.get("email"));
 
         Optional<AccountsInfo> accountsInfo = Optional.empty();
-        if (searchBy.get("id") == null || searchBy.get("email") == null) throw new NullPointerException(
+        if (searchBy.get("id").equals("") && searchBy.get("email").equals("")) throw new NullPointerException(
             "Processing fail. Got a null response"
         );
         if (!searchBy.get("id").equals("")) accountsInfo = accountsInfoRepository.findById(searchBy.get("id")); else accountsInfo =
@@ -190,10 +198,18 @@ public class AccountsInfoResource {
     @DeleteMapping("/accounts-infos/{id}")
     public ResponseEntity<Void> deleteAccountsInfo(@PathVariable String id, @RequestParam(required = true) Integer pin) {
         log.debug("REST request to delete AccountsInfo : {} with pin {}", id, pin);
+        // execute the deletion logic if the object is not null and both the security pin and the status match the required conditions
+        if (id.equals("") || pin == null) throw new NullPointerException();
+        AccountsInfo accountsInfo = accountsInfoRepository.findById(id).orElse(null);
+        if (!accountsInfo.getStatus().equals(AccountsInfo.Status.INACTIVE)) throw new BadRequestAlertException(
+            "Invalid status",
+            ENTITY_NAME,
+            "Valid"
+        );
         if (
-            accountsInfoRepository.findById(id).get().getSecurityPin() == pin &&
-            accountsInfoRepository.findById(id).get().getStatus().equals(AccountsInfo.Status.INACTIVE)
+            accountsInfo.getSecurityPin().equals(pin) && accountsInfo.getStatus().equals(AccountsInfo.Status.INACTIVE)
         ) accountsInfoRepository.deleteById(id);
+
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

@@ -107,8 +107,7 @@ public class AccountResource {
     }
 
     /**
-     * {@code POST  /account} : update the current user information.
-     *
+     * {@code POST  /account} : update the current user information.*
      * @param userDTO the current user information.
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user login wasn't found.

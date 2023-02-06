@@ -20,13 +20,16 @@ public class AccountsInfo implements Serializable {
     @Column(name = "id")
     private String id = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
 
+    // 6 digit alphaneumerical id
+    // ToDo Maybe better way
+
     @NotNull
     @Size(max = 20)
     @Column(name = "name", length = 20, nullable = false)
     private String name;
 
     @NotNull
-    @Email
+    @Email // applies email validator to this field
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
@@ -35,6 +38,7 @@ public class AccountsInfo implements Serializable {
     @Enumerated(EnumType.STRING)
     private Country country;
 
+    // Since jus t these countries acceptable
     public enum Country {
         US,
         DE,
@@ -56,6 +60,7 @@ public class AccountsInfo implements Serializable {
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
+    // must be in these states
     public enum Status {
         REQUESTED,
         ACTIVE,
@@ -238,8 +243,7 @@ public class AccountsInfo implements Serializable {
         this.securityPin = securityPin;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
-
+    // determining if two AccountsInfo objects are equal.
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -251,12 +255,7 @@ public class AccountsInfo implements Serializable {
         return id != null && id.equals(((AccountsInfo) o).id);
     }
 
-    @Override
-    public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
-    }
-
+    // represent an object as a string representation. Iused for debugging purposes
     // prettier-ignore
     @Override
     public String toString() {
