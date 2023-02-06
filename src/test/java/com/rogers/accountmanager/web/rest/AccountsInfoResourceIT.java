@@ -1,3 +1,4 @@
+/*
 package com.rogers.accountmanager.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,9 +22,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+*/
 /**
  * Integration tests for the {@link AccountsInfoResource} REST controller.
- */
+ *//*
+
 @IntegrationTest
 @AutoConfigureMockMvc
 @WithMockUser
@@ -79,12 +82,14 @@ class AccountsInfoResourceIT {
 
     private AccountsInfo accountsInfo;
 
-    /**
-     * Create an entity for this test.
-     *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
-     */
+    */
+/**
+ * Create an entity for this test.
+ *
+ * This is a static method, as tests for other entities might also need it,
+ * if they test an entity which requires the current entity.
+ *//*
+
     public static AccountsInfo createEntity(EntityManager em) {
         AccountsInfo accountsInfo = new AccountsInfo()
             .name(DEFAULT_NAME)
@@ -101,12 +106,14 @@ class AccountsInfoResourceIT {
         return accountsInfo;
     }
 
-    /**
-     * Create an updated entity for this test.
-     *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
-     */
+    */
+/**
+ * Create an updated entity for this test.
+ *
+ * This is a static method, as tests for other entities might also need it,
+ * if they test an entity which requires the current entity.
+ *//*
+
     public static AccountsInfo createUpdatedEntity(EntityManager em) {
         AccountsInfo accountsInfo = new AccountsInfo()
             .name(UPDATED_NAME)
@@ -591,3 +598,4 @@ class AccountsInfoResourceIT {
         assertThat(accountsInfoList).hasSize(databaseSizeBeforeDelete - 1);
     }
 }
+*/

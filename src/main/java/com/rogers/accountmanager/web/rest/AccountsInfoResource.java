@@ -63,13 +63,10 @@ public class AccountsInfoResource {
         accountsInfo.setStatus(AccountsInfo.Status.ACTIVE);
 
         log.debug("REST request to save AccountsInfo : {}", accountsInfo);
-        if (accountsInfo.getId() != null) {
-            throw new BadRequestAlertException("A new accountsInfo cannot already have an ID", ENTITY_NAME, "idexists");
-        }
 
         String apiUrl = "https://api.zippopotam.us/" + accountsInfo.getCountry() + "/" + accountsInfo.getPostalCode();
         System.out.println(retrieveDataFromAPI(apiUrl));
-        //        String response = retrieveDataFromAPI(apiUrl);
+
         ObjectMapper mapper = new ObjectMapper();
         setPlace(accountsInfo, apiUrl, mapper);
         AccountsInfo result = accountsInfoRepository.save(accountsInfo);
@@ -91,7 +88,7 @@ public class AccountsInfoResource {
      */
     @PutMapping("/accounts-infos/{id}")
     public ResponseEntity<AccountsInfo> updateAccountsInfo(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "id", required = false) final String id,
         @Valid @RequestBody AccountsInfo accountsInfo
     ) throws URISyntaxException {
         log.debug("REST request to update AccountsInfo : {}, {}", id, accountsInfo);
@@ -149,7 +146,7 @@ public class AccountsInfoResource {
      */
     @PatchMapping(value = "/accounts-infos/{id}", consumes = "application/merge-patch+json")
     public ResponseEntity<AccountsInfo> partialUpdateAccountsInfo(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "id", required = false) final String id,
         @NotNull @RequestBody AccountsInfo accountsInfo
     ) throws URISyntaxException {
         log.debug("REST request to partial update AccountsInfo partially : {}, {}", id, accountsInfo);
@@ -231,7 +228,7 @@ public class AccountsInfoResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the accountsInfo, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/accounts-infos/{id}")
-    public ResponseEntity<AccountsInfo> getAccountsInfo(@PathVariable Long id) {
+    public ResponseEntity<AccountsInfo> getAccountsInfo(@PathVariable String id) {
         log.debug("REST request to get AccountsInfo : {}", id);
         Optional<AccountsInfo> accountsInfo = accountsInfoRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(accountsInfo);
@@ -250,8 +247,7 @@ public class AccountsInfoResource {
         if (searchBy.get("id") == null || searchBy.get("email") == null) throw new NullPointerException(
             "Processing fail. Got a null response"
         );
-        if (!searchBy.get("id").equals("")) accountsInfo =
-            accountsInfoRepository.findById(Long.valueOf(searchBy.get("id"))); else accountsInfo =
+        if (!searchBy.get("id").equals("")) accountsInfo = accountsInfoRepository.findById(searchBy.get("id")); else accountsInfo =
             accountsInfoRepository.findByEmail(searchBy.get("email"));
         return ResponseUtil.wrapOrNotFound(accountsInfo);
     }
@@ -267,7 +263,7 @@ public class AccountsInfoResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/accounts-infos/{id}")
-    public ResponseEntity<Void> deleteAccountsInfo(@PathVariable Long id, @RequestParam(required = true) Integer pin) {
+    public ResponseEntity<Void> deleteAccountsInfo(@PathVariable String id, @RequestParam(required = true) Integer pin) {
         log.debug("REST request to delete AccountsInfo : {} with pin {}", id, pin);
         if (
             accountsInfoRepository.findById(id).get().getSecurityPin() == pin &&

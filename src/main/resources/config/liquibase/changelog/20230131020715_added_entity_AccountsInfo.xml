@@ -11,7 +11,7 @@
     -->
     <changeSet id="20230131020715-1-2-3" author="jhipster">
         <createTable tableName="accounts_info">
-            <column name="id" type="bigint">
+            <column name="id" type="varchar(6)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="varchar(20)">
@@ -66,7 +66,7 @@
                   file="config/liquibase/fake-data/accounts_info.csv"
                   separator=";"
                   tableName="accounts_info">
-            <column name="id" type="numeric"/>
+            <column name="id" type="uuid"/>
             <column name="name" type="string"/>
             <column name="email" type="string"/>
             <column name="country" type="string"/>

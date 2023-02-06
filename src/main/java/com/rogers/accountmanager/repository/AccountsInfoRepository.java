@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AccountsInfoRepository extends JpaRepository<AccountsInfo, Long> {
+public interface AccountsInfoRepository extends JpaRepository<AccountsInfo, String> {
     Optional<AccountsInfo> findByEmail(String email);
     /*
     @Query("SELECT State, Place, COUNT(id) as user FROM accounts_info GROUP BY State, Place" +

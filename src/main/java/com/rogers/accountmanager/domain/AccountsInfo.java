@@ -1,8 +1,11 @@
 package com.rogers.accountmanager.domain;
 
 import java.io.Serializable;
+import java.util.UUID;
 import javax.persistence.*;
 import javax.validation.constraints.*;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 /**
  * A AccountsInfo.
@@ -14,9 +17,8 @@ public class AccountsInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
-    private Long id;
+    @Column(name = "id")
+    private String id = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
 
     @NotNull
     @Size(max = 20)
@@ -80,15 +82,15 @@ public class AccountsInfo implements Serializable {
     private Integer securityPin;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public AccountsInfo id(Long id) {
+    public AccountsInfo id(String id) {
         this.id = id;
         return this;
     }

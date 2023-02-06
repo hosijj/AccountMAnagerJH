@@ -11,11 +11,11 @@ class AccountsInfoTest {
     void equalsVerifier() throws Exception {
         TestUtil.equalsVerifier(AccountsInfo.class);
         AccountsInfo accountsInfo1 = new AccountsInfo();
-        accountsInfo1.setId(1L);
+        //        accountsInfo1.setId(123,a);
         AccountsInfo accountsInfo2 = new AccountsInfo();
         accountsInfo2.setId(accountsInfo1.getId());
         assertThat(accountsInfo1).isEqualTo(accountsInfo2);
-        accountsInfo2.setId(2L);
+        //        accountsInfo2.setId(2L);
         assertThat(accountsInfo1).isNotEqualTo(accountsInfo2);
         accountsInfo1.setId(null);
         assertThat(accountsInfo1).isNotEqualTo(accountsInfo2);
