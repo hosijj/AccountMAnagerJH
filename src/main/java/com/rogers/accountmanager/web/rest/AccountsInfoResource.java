@@ -65,8 +65,6 @@ public class AccountsInfoResource {
         log.debug("REST request to save AccountsInfo : {}", accountsInfo);
 
         String apiUrl = "https://api.zippopotam.us/" + accountsInfo.getCountry() + "/" + accountsInfo.getPostalCode();
-        System.out.println(retrieveDataFromAPI(apiUrl));
-
         ObjectMapper mapper = new ObjectMapper();
         setPlace(accountsInfo, apiUrl, mapper);
         AccountsInfo result = accountsInfoRepository.save(accountsInfo);
@@ -131,83 +129,6 @@ public class AccountsInfoResource {
             // handle the error
             log.error("Error parsing response", e);
         }
-    }
-
-    /**
-     * {@code PATCH  /accounts-infos/:id} : Partial updates given fields of an existing accountsInfo, field will ignore if it is null
-     *
-     * @param id           the id of the accountsInfo to save.
-     * @param accountsInfo the accountsInfo to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated accountsInfo,
-     * or with status {@code 400 (Bad Request)} if the accountsInfo is not valid,
-     * or with status {@code 404 (Not Found)} if the accountsInfo is not found,
-     * or with status {@code 500 (Internal Server Error)} if the accountsInfo couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/accounts-infos/{id}", consumes = "application/merge-patch+json")
-    public ResponseEntity<AccountsInfo> partialUpdateAccountsInfo(
-        @PathVariable(value = "id", required = false) final String id,
-        @NotNull @RequestBody AccountsInfo accountsInfo
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update AccountsInfo partially : {}, {}", id, accountsInfo);
-        if (accountsInfo.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, accountsInfo.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!accountsInfoRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<AccountsInfo> result = accountsInfoRepository
-            .findById(accountsInfo.getId())
-            .map(
-                existingAccountsInfo -> {
-                    if (accountsInfo.getName() != null) {
-                        existingAccountsInfo.setName(accountsInfo.getName());
-                    }
-                    if (accountsInfo.getEmail() != null) {
-                        existingAccountsInfo.setEmail(accountsInfo.getEmail());
-                    }
-                    if (accountsInfo.getCountry() != null) {
-                        existingAccountsInfo.setCountry(accountsInfo.getCountry());
-                    }
-                    if (accountsInfo.getPostalCode() != null) {
-                        existingAccountsInfo.setPostalCode(accountsInfo.getPostalCode());
-                    }
-                    if (accountsInfo.getAge() != null) {
-                        existingAccountsInfo.setAge(accountsInfo.getAge());
-                    }
-                    if (accountsInfo.getStatus() != null) {
-                        existingAccountsInfo.setStatus(accountsInfo.getStatus());
-                    }
-                    if (accountsInfo.getPlace() != null) {
-                        existingAccountsInfo.setPlace(accountsInfo.getPlace());
-                    }
-                    if (accountsInfo.getState() != null) {
-                        existingAccountsInfo.setState(accountsInfo.getState());
-                    }
-                    if (accountsInfo.getLongitude() != null) {
-                        existingAccountsInfo.setLongitude(accountsInfo.getLongitude());
-                    }
-                    if (accountsInfo.getLatitude() != null) {
-                        existingAccountsInfo.setLatitude(accountsInfo.getLatitude());
-                    }
-                    if (accountsInfo.getSecurityPin() != null) {
-                        existingAccountsInfo.setSecurityPin(accountsInfo.getSecurityPin());
-                    }
-
-                    return existingAccountsInfo;
-                }
-            )
-            .map(accountsInfoRepository::save);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accountsInfo.getId().toString())
-        );
     }
 
     /**
