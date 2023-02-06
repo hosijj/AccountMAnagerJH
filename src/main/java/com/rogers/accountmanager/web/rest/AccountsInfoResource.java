@@ -1,5 +1,7 @@
 package com.rogers.accountmanager.web.rest;
 
+import static java.util.stream.Collectors.summingInt;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,11 +10,13 @@ import com.rogers.accountmanager.repository.AccountsInfoRepository;
 import com.rogers.accountmanager.service.dto.CountOfUsersGroupedByStateAndPlaceDTO;
 import com.rogers.accountmanager.web.rest.errors.BadRequestAlertException;
 import com.sun.corba.se.spi.ior.ObjectKey;
+import io.undertow.security.idm.Account;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.ws.Response;
@@ -194,6 +198,56 @@ public class AccountsInfoResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/accounts-infos-retrieve")
+    public ResponseEntity<Map<String, Object>> getGroupedAccounts() {
+        List<AccountsInfo> accounts = accountsInfoRepository.findAll();
+
+        Map<AccountsInfo.Country, Map<String, Map<String, Integer>>> groupedByCountryAndStateAndPlace = accounts
+            .stream()
+            .collect(
+                Collectors.groupingBy(
+                    AccountsInfo::getCountry,
+                    Collectors.groupingBy(
+                        AccountsInfo::getState,
+                        Collectors.groupingBy(AccountsInfo::getPlace, Collectors.summingInt(a -> 1))
+                    )
+                )
+            );
+
+        Map<String, Object> response = new HashMap<>();
+        groupedByCountryAndStateAndPlace.forEach(
+            (country, stateAndPlaceCounts) -> {
+                Map<String, Object> states = new HashMap<>();
+                final int[] totalCount = { 0 };
+                stateAndPlaceCounts.forEach(
+                    (state, placeCounts) -> {
+                        Map<String, Integer> places = new HashMap<>();
+                        final int[] stateCount = { 0 };
+                        placeCounts.forEach(
+                            (place, count) -> {
+                                places.put(place, count);
+                                stateCount[0] += count;
+                            }
+                        );
+                        Map<String, Object> placesInfo = new HashMap<>();
+                        placesInfo.put("count", stateCount[0]);
+                        placesInfo.put("places", places);
+
+                        states.put(state, placesInfo);
+                        totalCount[0] += stateCount[0];
+                    }
+                );
+                Map<String, Object> countryInfo = new HashMap<>();
+                countryInfo.put("count", totalCount);
+                countryInfo.put("states", states);
+
+                response.put(country.toString(), countryInfo);
+            }
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     private static String retrieveDataFromAPI(String apiUrl) {
